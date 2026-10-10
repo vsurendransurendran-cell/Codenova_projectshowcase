@@ -1,0 +1,6 @@
+{
+  "name": "CampusCraft - Student Project Showcase",
+  "description": "A moderated showcase for student engineering, research, and creative projects. Students submit their work, moderators review links and quality, and approved projects are published in a public gallery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
