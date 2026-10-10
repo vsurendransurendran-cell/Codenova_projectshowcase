@@ -1,0 +1,88 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ProjectStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String
+  role         Role          @default(ADMIN)
+  createdAt    DateTime      @default(now())
+  reviewed     Project[]     @relation("ProjectReviewer")
+  adminActions AdminAction[]
+
+  @@map("users")
+}
+
+model Project {
+  id              String        @id @default(uuid())
+  title           String
+  studentName     String
+  description     String
+  githubUrl       String
+  liveUrl         String
+  status          ProjectStatus @default(PENDING)
+  rejectionReason String?
+  trackingToken   String        @unique
+  submitterIpHash String
+  reviewedById    String?
+  reviewedBy      User?         @relation("ProjectReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  tags            ProjectTag[]
+  adminActions    AdminAction[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([trackingToken])
+  @@map("projects")
+}
+
+model Tag {
+  id       String       @id @default(uuid())
+  name     String       @unique
+  projects ProjectTag[]
+
+  @@index([name])
+  @@map("tags")
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@map("project_tags")
+}
+
+model AdminAction {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id])
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  action    String
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@map("admin_actions")
+}
